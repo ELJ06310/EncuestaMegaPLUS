@@ -95,6 +95,52 @@
       color: #fff;
       background-color: #333;
     }
+    
+    /* Nuevos estilos para comentarios */
+    .comments-container {
+      display: none;
+      margin-top: 20px;
+    }
+    
+    .comment-label {
+      display: block;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    
+    textarea {
+      width: 100%;
+      background-color: #222;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 100px;
+      box-sizing: border-box;
+    }
+    
+    .submit-comment-btn {
+      background: #fff;
+      color: #000;
+      border: none;
+      padding: 12px 25px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.3s;
+      display: block;
+      margin: 15px auto 0;
+    }
+    
+    .submit-comment-btn:hover {
+      background-color: #2196F3;
+      color: white;
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
@@ -116,13 +162,30 @@
     </div>
     
     <div class="btn-container">
-      <button class="btn btn-yes" onclick="submitVote('Sí')">SÍ</button>
-      <button class="btn btn-no" onclick="submitVote('No')">NO</button>
+      <button class="btn btn-yes" onclick="showCommentBox('Sí')">SÍ</button>
+      <button class="btn btn-no" onclick="showCommentBox('No')">NO</button>
+    </div>
+    
+    <div id="comments-container" class="comments-container">
+      <label class="comment-label" id="comment-label">Por favor, explica por qué votaste <span id="vote-type"></span>:</label>
+      <textarea id="comment" placeholder="Escribe tu comentario aquí..."></textarea>
+      <button class="submit-comment-btn" onclick="submitVote()">Enviar respuesta</button>
     </div>
   </div>
   
   <script>
-    function submitVote(vote) {
+    let selectedVote = '';
+    
+    function showCommentBox(vote) {
+      selectedVote = vote;
+      document.getElementById('vote-type').textContent = vote;
+      document.getElementById('comment-label').textContent = `Por favor, explica por qué votaste ${vote}:`;
+      document.querySelector('.btn-container').style.display = 'none';
+      document.getElementById('comments-container').style.display = 'block';
+    }
+    
+    function submitVote() {
+      const comment = document.getElementById('comment').value.trim();
       const successMessage = document.getElementById('success-message');
       const errorMessage = document.getElementById('error-message');
       const loading = document.getElementById('loading');
@@ -133,7 +196,8 @@
       
       // Enviar la respuesta usando Formspree
       const formData = new FormData();
-      formData.append('vote', vote);
+      formData.append('vote', selectedVote);
+      formData.append('comment', comment);
       formData.append('_subject', 'Voto encuesta Hentai');
       formData.append('timestamp', new Date().toLocaleString('es-ES'));
       
@@ -146,15 +210,19 @@
         loading.style.display = 'none';
         if (response.ok) {
           successMessage.style.display = 'block';
-          document.querySelector('.btn-container').style.display = 'none';
+          document.getElementById('comments-container').style.display = 'none';
           document.querySelector('.question').textContent = '¡Gracias por tu opinión!';
         } else {
           errorMessage.style.display = 'block';
+          document.getElementById('comments-container').style.display = 'none';
+          document.querySelector('.btn-container').style.display = 'flex';
         }
       })
       .catch(() => {
         loading.style.display = 'none';
         errorMessage.style.display = 'block';
+        document.getElementById('comments-container').style.display = 'none';
+        document.querySelector('.btn-container').style.display = 'flex';
       });
     }
   </script>
